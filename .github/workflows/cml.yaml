@@ -1,12 +1,48 @@
+# name: model-wine-quality
+# on: [push]
+# jobs:
+#   run:
+#     runs-on: ubuntu-latest
+#     steps:
+#       - uses: actions/checkout@v3
+#     #   - uses: actions/setup-python@v4
+#       - uses: iterative/setup-cml@v1
+#       - name: cml_run
+#         env:
+#           REPO_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+#         run: |
+#           pip install -r requirements.txt
+#           python train.py
+
+#           echo "## Model Metrics" > report.md
+#           cat metrics.txt >> report.md
+        
+#           echo "## Data Visualization" >> report.md
+#           cml-publish feature_importance.png --md >> report.md
+#           cml-publish residuals.png --md >> report.md
+          
+#           cml-send-comment report.md
+#         #   cml-publish confusion_matrix.png --md >> report.md
+
+
+
 name: model-wine-quality
-on: [push]
+on: [push, pull_request]
+
 jobs:
   run:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+
     steps:
       - uses: actions/checkout@v3
-    #   - uses: actions/setup-python@v4
+      - uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
       - uses: iterative/setup-cml@v1
+
       - name: cml_run
         env:
           REPO_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -16,10 +52,9 @@ jobs:
 
           echo "## Model Metrics" > report.md
           cat metrics.txt >> report.md
-        
+
           echo "## Data Visualization" >> report.md
-          cml-publish feature_importance.png --md >> report.md
-          cml-publish residuals.png --md >> report.md
-          
-          cml-send-comment report.md
-        #   cml-publish confusion_matrix.png --md >> report.md
+          echo "![inline](feature_importance.png)" >> report.md
+          echo "![inline](residuals.png)" >> report.md
+
+          cml comment create --publish report.md
